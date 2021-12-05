@@ -1,4 +1,5 @@
-from functools import reduce
+from collections import Counter
+from itertools import chain
 from typing import NamedTuple
 
 
@@ -32,18 +33,6 @@ class Line(NamedTuple):
             return []
 
 
-class Map(NamedTuple):
-    cells: list
-
-    def display(self):
-        for row in self.cells:
-            for cell in row:
-                if cell == 0:
-                    cell = "."
-                print(cell, end="")
-            print()
-
-
 def parse(data):
     data = data.strip()
 
@@ -58,33 +47,19 @@ def parse(data):
     return tuple(lines)
 
 
-def make_map(line_specs, include_diagonals):
-    mapwidth = max(max(line.frm.x, line.to.x) for line in line_specs) + 1
-    mapheight = max(max(line.frm.y, line.to.y) for line in line_specs) + 1
-    map = [[0 for cell in range(mapwidth)] for row in range(mapheight)]
-    add_lines(map, line_specs, include_diagonals)
-    return Map(map)
+def make_point_list(lines, include_diagonals):
+    return tuple(chain(*[line.all_points(include_diagonals) for line in lines]))
 
 
-def add_lines(map, lines, include_diagonals):
-    return reduce(lambda map, line: add_line(map, line, include_diagonals), lines, map)
-
-
-def add_line(map, line, include_diagonals):
-    for coord in line.all_points(include_diagonals):
-        # this assignment could be replaced with a persistent hashmap
-        # in a functional language, but Python would need a library
-        # for that, so I'm faking it
-        map[coord.y][coord.x] += 1
-    return map
-
-
-def count_hotspots(map):
-    return sum([sum(1 for cell in row if cell >= 2) for row in map.cells])
+def count_duplicated_points(lines, include_diagonals):
+    points = make_point_list(lines, include_diagonals)
+    counters = Counter(points)
+    return len([x for x, count in counters.items() if count >= 2])
 
 
 def find_hotspots(data, include_diagonals):
-    return count_hotspots(make_map(parse(data), include_diagonals))
+    lines = parse(data)
+    return count_duplicated_points(lines, include_diagonals)
 
 
 def test():
