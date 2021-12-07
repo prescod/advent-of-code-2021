@@ -13,7 +13,7 @@ def test_cost(numbers, pos, linear, be_fast):
 
 def find_pos(data, linear, be_fast):
     """Linear is Part 1 of the question. 
-    be_fast means "Use linear algorithms O(N*M^2)" versus "Use optimized algorithms" O(N*log(M)) """
+    be_fast means "Use optimized algorithms" O(N*log(M)) instead of "linear algorithms" O(N*M^2)""""
     numbers = [int(num) for num in data.strip().split(",")]
 
     def cost(number):
